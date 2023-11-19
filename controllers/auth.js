@@ -1,6 +1,6 @@
-import { db } from '../db.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { db } from '../db.js';
 import HttpError from '../helpers/HttpError.js';
 
 const { ACCESS_SECRET_KEY } = process.env;
@@ -33,7 +33,7 @@ class AuthController {
     try {
       const { username, password } = req.body;
       const query = 'SELECT * FROM users WHERE username = ?';
-      db.query(query, [username], async (error, data) => {
+      db.query(query, [username], (error, data) => {
         if (error) return res.json(error);
         if (data.length === 0) {
           throw HttpError(404, 'User not found!');
@@ -44,6 +44,12 @@ class AuthController {
 
         const token = jwt.sign({ id: data[0].id }, ACCESS_SECRET_KEY, { expiresIn: '23h' });
 
+        // const qSaveToken = `UPDATE users SET access_token = ? WHERE id = ${data[0].id}`;
+        // // const values = token;
+        // db.query(qSaveToken, [token], (error, data) => {
+        //   if (error) return res.json(error);
+        //   console.log('token succefily writed');
+        // });
         const userDTO = {
           username: data[0].username,
           email: data[0].email,
