@@ -22,8 +22,9 @@ class CommentsController {
   async fetchedComment(req, res, next) {
     try {
       const { id } = req.params;
-      const query = `SELECT * FROM comments WHERE id=${id}`;
-      db.query(query, (error, data) => {
+      const query = `SELECT * FROM comments WHERE id= ?`;
+      const value = id;
+      db.query(query, [value], (error, data) => {
         if (error) return res.json(error);
         if (!data.length) {
           throw HttpError(409, `No comments with id ${id}`);
@@ -38,16 +39,30 @@ class CommentsController {
     try {
       const token = req.cookies.access_token;
       const { id } = jwt.verify(token, ACCESS_SECRET_KEY);
-      const queryForFetchUserData = `SELECT username, email, home_page FROM users WHERE id = ${id}
+      console.log(id);
+      const queryForFetchUserData = `SELECT username, email, home_page FROM users WHERE id = ?
 `;
-      const userData = db.query(queryForFetchUserData, (error, data) => {
+      const idValue = id;
+      const userData = db.query(queryForFetchUserData, [idValue], (error, data) => {
         if (error) return res.json(error);
-        // console.log(data[0]);
-        // return data[0];
+        console.log(data[0]);
+
+        const q =
+          'INSERT INTO comments (`username`, `email`, `home_page`, `text`, `img`, `uid`) VALUES (?);';
+        const values = [
+          data[0].username,
+          data[0].email,
+          data[0].home_page,
+          req.body.text,
+          req.body.img,
+          id,
+        ];
+        db.query(q, [values], error => {
+          if (error) return res.json(error);
+          return res.status(200).json('Comment succesfuly created');
+        });
       });
-      return res.json(userData);
-      // const q = 'INSERT INTO comments (`text`, `uid`) VALUES (?);';
-      // const values=
+      //
     } catch (error) {}
   }
   async deleteComment(req, res) {
