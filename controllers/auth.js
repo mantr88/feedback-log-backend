@@ -1,7 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db.js';
-import HttpError from '../helpers/HttpError.js';
 
 const { ACCESS_SECRET_KEY } = process.env;
 
@@ -13,7 +12,7 @@ class AuthController {
       db.query(query, [email, username], async (error, data) => {
         if (error) return res.json(error);
         if (data.length) {
-          throw HttpError(409, 'User already exists!');
+          return res.status(409).json('User already exists!');
         }
 
         const hashPassword = await bcrypt.hash(password, 10);
@@ -36,7 +35,7 @@ class AuthController {
       db.query(query, [username], (error, data) => {
         if (error) return res.json(error);
         if (data.length === 0) {
-          throw HttpError(404, 'User not found!');
+          return res.status(404).json('User not found!');
         }
         const isPasswordCorrect = bcrypt.compareSync(password, data[0].password);
 

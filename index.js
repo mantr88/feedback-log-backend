@@ -17,14 +17,18 @@ app.listen(2222, () => {
 });
 
 db.connect(error => {
-  if (error) console.log(error);
-  console.log('Connected DB');
+  if (error) {
+    console.log(error);
+    next(error);
+  }
 });
 
-app.use((req, res) => {
-  res.status(404).json({ message: 'Not found' });
+app.use((__, res, ___) => {
+  console.error(error);
+  return res.status(404).send('Not found');
 });
 
-app.use((err, req, res, next) => {
-  res.status(500).json({ message: err.message, stack: err.stack });
+app.use((error, __, res, ___) => {
+  console.error(error);
+  return res.status(500).send('Server error');
 });

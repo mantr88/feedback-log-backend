@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import { db } from '../db.js';
-import HttpError from '../helpers/HttpError.js';
 
 const { ACCESS_SECRET_KEY } = process.env;
 
@@ -11,7 +10,7 @@ class CommentsController {
       db.query(query, (error, data) => {
         if (error) return res.json(error);
         if (!data.length) {
-          throw HttpError(409, 'No comments yet');
+          return res.status(409).json('No comments yet');
         }
         return res.status(200).json(data);
       });
@@ -27,7 +26,7 @@ class CommentsController {
       db.query(query, [value], (error, data) => {
         if (error) return res.json(error);
         if (!data.length) {
-          throw HttpError(409, `No comments with id ${id}`);
+          return res.status(409).json(`No comments with id ${id}`);
         }
         return res.status(200).json(data);
       });
@@ -35,7 +34,7 @@ class CommentsController {
       next(error);
     }
   }
-  async addComment(req, res) {
+  async addComment(req, res, next) {
     try {
       const token = req.cookies.access_token;
       const { id } = jwt.verify(token, ACCESS_SECRET_KEY);
@@ -63,13 +62,9 @@ class CommentsController {
         });
       });
       //
-    } catch (error) {}
-  }
-  async deleteComment(req, res) {
-    res.json('from controller');
-  }
-  async updateComment(req, res) {
-    res.json('from controller');
+    } catch (error) {
+      next(error);
+    }
   }
 }
 
