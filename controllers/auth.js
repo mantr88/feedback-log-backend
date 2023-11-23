@@ -10,7 +10,7 @@ class AuthController {
       const { email, username, password } = req.body;
       const query = 'SELECT * FROM users WHERE email = ? OR username = ?';
       db.query(query, [email, username], async (error, data) => {
-        if (error) return res.json(error);
+        if (error) return next(error);
         if (data.length) {
           return res.status(409).json('User already exists!');
         }
@@ -20,7 +20,7 @@ class AuthController {
         const q = 'INSERT INTO users(`username`,`email`,`password`) VALUES (?)';
         const values = [username, email, hashPassword];
         db.query(q, [values], (error, data) => {
-          if (error) return res.json(error);
+          if (error) return next(error);
           return res.status(200).json('User has been created.');
         });
       });
@@ -33,7 +33,7 @@ class AuthController {
       const { username, password } = req.body;
       const query = 'SELECT * FROM users WHERE username = ?';
       db.query(query, [username], (error, data) => {
-        if (error) return res.json(error);
+        if (error) return next(error);
         if (data.length === 0) {
           return res.status(404).json('User not found!');
         }

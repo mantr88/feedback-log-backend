@@ -19,9 +19,9 @@ app.listen(2222, () => {
 db.connect(error => {
   if (error) {
     console.log(error);
-    console.log('DB connected');
     next(error);
   }
+  console.log('DB connected');
 });
 
 app.use((__, res, ___) => {

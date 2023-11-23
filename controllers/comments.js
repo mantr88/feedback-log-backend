@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { db } from '../db.js';
+import uploadImg from '../helpers/cloudinary.js';
 
 const { ACCESS_SECRET_KEY } = process.env;
 
@@ -8,7 +9,7 @@ class CommentsController {
     try {
       const query = 'SELECT * FROM comments';
       db.query(query, (error, data) => {
-        if (error) return res.json(error);
+        if (error) return next(error);
         if (!data.length) {
           return res.status(409).json('No comments yet');
         }
@@ -24,7 +25,7 @@ class CommentsController {
       const query = `SELECT * FROM comments WHERE id= ?`;
       const value = id;
       db.query(query, [value], (error, data) => {
-        if (error) return res.json(error);
+        if (error) return next(error);
         if (!data.length) {
           return res.status(409).json(`No comments with id ${id}`);
         }
@@ -38,30 +39,23 @@ class CommentsController {
     try {
       const token = req.cookies.access_token;
       const { id } = jwt.verify(token, ACCESS_SECRET_KEY);
-      console.log(id);
+      const { username, email, home_page, text } = req.body;
+
+      let img = null;
+      if (req.file) {
+        const { url } = await uploadImg(req.file.path);
+        img = url;
+      }
+
       const queryForFetchUserData = `SELECT username, email, home_page FROM users WHERE id = ?
 `;
-      const idValue = id;
-      const userData = db.query(queryForFetchUserData, [idValue], (error, data) => {
-        if (error) return res.json(error);
-        console.log(data[0]);
-
-        const q =
-          'INSERT INTO comments (`username`, `email`, `home_page`, `text`, `img`, `uid`) VALUES (?);';
-        const values = [
-          data[0].username,
-          data[0].email,
-          data[0].home_page,
-          req.body.text,
-          req.body.img,
-          id,
-        ];
-        db.query(q, [values], error => {
-          if (error) return res.json(error);
-          return res.status(200).json('Comment succesfuly created');
-        });
+      const q =
+        'INSERT INTO comments (`username`, `email`, `home_page`, `text`, `img`, `uid`) VALUES (?);';
+      const values = [username, email, home_page, text, img, id];
+      db.query(q, [values], error => {
+        if (error) return next(error);
+        return res.status(201).json('Comment succesfuly created');
       });
-      //
     } catch (error) {
       next(error);
     }
