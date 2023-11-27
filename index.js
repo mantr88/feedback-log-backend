@@ -1,35 +1,52 @@
 import express from 'express';
 import dotenv from 'dotenv/config.js';
-import cookieParser from 'cookie-parser';
+import http from 'http';
+import { Server } from 'socket.io';
 import { db } from './db.js';
-import authRoutes from './routes/auth.js';
-import commentsRoutes from './routes/comments.js';
+import commentsController from './controllers/comments.js';
+import authController from './controllers/auth.js';
 
 const app = express();
-
 app.use(express.json());
-app.use(cookieParser());
-app.use('/api/auth', authRoutes);
-app.use('/api/comments', commentsRoutes);
+const server = http.Server(app);
+const port = process.env.PORT || 8000;
+const io = new Server(server, {
+  cookie: true,
+  cors: {
+    origin: '*',
+    credentials: true,
+  },
+});
 
-app.listen(2222, () => {
-  console.log('Server run');
+server.listen(port, () => {
+  console.log('listening on *:' + port);
 });
 
 db.connect(error => {
   if (error) {
     console.log(error);
-    next(error);
   }
-  console.log('DB connected');
 });
 
-app.use((__, res, ___) => {
-  console.error(error);
-  return res.status(404).send('Not found');
-});
+io.on('connection', socket => {
+  //getComments
+  commentsController.getComments(socket);
+  //addComment
+  socket.on('add_comment', async data => {
+    commentsController.addComment(data, socket);
+  });
+  //registration
+  socket.on('register', data => {
+    authController.register(data, socket);
+  });
 
-app.use((error, __, res, ___) => {
-  console.error(error);
-  return res.status(500).send('Server error');
+  //login
+  socket.on('login', data => {
+    authController.login(data, socket);
+  });
+
+  //logout
+  socket.on('logout', data => {
+    authController.logout(socket);
+  });
 });
