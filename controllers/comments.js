@@ -1,7 +1,10 @@
 import jwt from 'jsonwebtoken';
+import { writeFile } from 'fs';
+import { promisify } from 'util';
 import { db } from '../db.js';
 import uploadImg from '../helpers/cloudinary.js';
-import upload from '../middlewares/upload.js';
+import validateBody from '../middlewares/validateBody.js';
+import commentSchema from '../schemas/commentSchema.js';
 
 const { ACCESS_SECRET_KEY } = process.env;
 
@@ -22,35 +25,32 @@ class CommentsController {
   }
   async addComment(data, socket) {
     try {
+      const { username, email, home_page, text } = data;
+      validateBody(commentSchema, { username, email, home_page, text });
+
       const { token } = socket.handshake.auth;
       const { id } = jwt.verify(token, ACCESS_SECRET_KEY);
-      const { username, email, home_page, text } = JSON.parse(data);
-      console.log(data);
+
       let img = null;
+      if (data.image) {
+        const fileExtension = 'png';
+        const filePath = `./tmp/upload.${fileExtension}`;
+        const writeFileAsync = promisify(writeFile);
 
-      upload.single('image')(data, socket.handshake.res, async error => {
-        if (error) {
-          socket.emit('error', `Error uploading image: ${error}`);
-          return;
-        }
-      });
+        await writeFileAsync(filePath, data.image, err => {
+          if (err) {
+            socket.emit('error', `Помилка запису файлу: ${err}`);
+            return;
+          }
+        });
 
-      console.log(socket.handshake.file);
-
-      if (socket.handshake.file) {
-        const { url } = await uploadImg(socket.handshake.file.path);
+        const { url } = await uploadImg(filePath);
         img = url;
       }
 
-      // if (req.file) {
-      //   const { url } = await uploadImg(req.file.path);
-      //   img = url;
-      // }
-
-      //       const queryForFetchUserData = `SELECT username, email, home_page FROM users WHERE id = ?
-      // `;
       const q =
         'INSERT INTO comments (`username`, `email`, `home_page`, `text`, `img`, `uid`) VALUES (?);';
+
       const values = [username, email, home_page, text, img, id];
       db.query(q, [values], error => {
         if (error) return socket.emit('error', `It's happend next error ${error}`);

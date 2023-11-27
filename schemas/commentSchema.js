@@ -7,7 +7,6 @@ const commentSchema = Joi.object({
   email: Joi.string().pattern(emailRegexp).required(),
   home_page: Joi.string(),
   text: Joi.string().required(),
-  img: Joi.string().allow('').optional(),
 });
 
 export default commentSchema;
