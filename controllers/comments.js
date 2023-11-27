@@ -15,7 +15,7 @@ class CommentsController {
       db.query(query, (error, data) => {
         if (error) return socket.emit('error', `It's happend next error ${error}`);
         if (!data.length) {
-          return res.status(409).json('No comments yet');
+          return socket.emit('add_comment_response', 'No comments yet');
         }
         socket.emit('get_all_comments', JSON.stringify(data));
       });
