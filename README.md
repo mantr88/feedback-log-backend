@@ -20,6 +20,16 @@ After creation, the project was deployed on the render.com
 (https://feedback-log-backend.onrender.com) service and packaged in a Docker container with all
 dependencies and environment.
 
+Example environement varibles:
+
+ACCESS_SECRET_KEY=
+
+PORT=
+
+//Cloudinary CLOUD_NAME= API_KEY= API_SECRET=
+
+//DB on clever-cloud DB_HOST= DB_USERNAME= DB_PASSWORD= DB_NAME= DB_PORT=
+
 During the creation of this project, the following technologies were used Node.js, Express.js,
 Socket.io, MySQL, Jsonwebtoken, Joi, Cloudinary.
 
