@@ -13,7 +13,7 @@ class AuthController {
       const { email, username, password } = JSON.parse(data);
       validateBody(registerUserSchema, { email, username, password });
 
-      const query = 'SELECT * FROM users WHERE email = ? OR username = ?';
+      const query = 'SELECT * FROM users WHERE email = ? OR username = ?;';
       db.query(query, [email, username], async (error, data) => {
         if (error) return socket.emit('error', `It's happend next error ${error}`);
         if (data.length) {
@@ -22,7 +22,7 @@ class AuthController {
 
         const hashPassword = await bcrypt.hash(password, 10);
 
-        const q = 'INSERT INTO users(`username`,`email`,`password`) VALUES (?)';
+        const q = 'INSERT INTO users(`username`,`email`,`password`) VALUES (?);';
         const values = [username, email, hashPassword];
         db.query(q, [values], (error, data) => {
           if (error) return socket.emit('error', `It's happend next error ${error}`);
@@ -38,7 +38,7 @@ class AuthController {
       const { username, password } = JSON.parse(data);
       validateBody(loginUserSchema, { username, password });
 
-      const query = 'SELECT * FROM users WHERE username = ?';
+      const query = 'SELECT * FROM users WHERE username = ?;';
       db.query(query, [username], (error, data) => {
         if (error) return socket.emit('error', `It's happend next error ${error}`);
         if (data.length === 0) {

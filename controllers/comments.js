@@ -11,7 +11,7 @@ const { ACCESS_SECRET_KEY } = process.env;
 class CommentsController {
   async getComments(socket) {
     try {
-      const query = 'SELECT * FROM comments';
+      const query = 'SELECT * FROM comments;';
       db.query(query, (error, data) => {
         if (error) return socket.emit('error', `It's happend next error ${error}`);
         if (!data.length) {
