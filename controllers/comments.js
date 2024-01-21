@@ -11,7 +11,8 @@ const { ACCESS_SECRET_KEY } = process.env;
 class CommentsController {
   async getComments(socket) {
     try {
-      const query = 'SELECT * FROM comments;';
+      const query =
+        'SELECT  c.id, c.text, c.date, c.img, u.username , u.email , u.home_page FROM comments AS c INNER JOIN users u ON u.id = c.uid;';
       db.query(query, (error, data) => {
         if (error) return socket.emit('error', `It's happend next error ${error}`);
         if (!data.length) {
@@ -25,8 +26,8 @@ class CommentsController {
   }
   async addComment(data, socket) {
     try {
-      const { username, email, home_page, text } = data;
-      validateBody(commentSchema, { username, email, home_page, text });
+      const { text } = data;
+      validateBody(commentSchema, { text });
 
       const { token } = socket.handshake.auth;
       const { id } = jwt.verify(token, ACCESS_SECRET_KEY);
@@ -48,10 +49,9 @@ class CommentsController {
         img = url;
       }
 
-      const q =
-        'INSERT INTO comments (`username`, `email`, `home_page`, `text`, `img`, `uid`) VALUES (?);';
+      const q = 'INSERT INTO comments ( `text`, `img`, `uid`) VALUES (?);';
 
-      const values = [username, email, home_page, text, img, id];
+      const values = [text, img, id];
       db.query(q, [values], error => {
         if (error) return socket.emit('error', `It's happend next error ${error}`);
         return socket.emit('add_comment_response', JSON.stringify(values));
