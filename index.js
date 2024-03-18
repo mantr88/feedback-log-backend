@@ -8,8 +8,10 @@ import authController from './controllers/auth.js';
 
 const app = express();
 app.use(express.json());
+
 const server = http.Server(app);
 const port = process.env.PORT || 8000;
+
 const io = new Server(server, {
   cookie: true,
   cors: {

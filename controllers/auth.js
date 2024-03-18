@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db.js';
 import validateBody from '../middlewares/validateBody.js';
-import registerUserSchema from '../schemas/registerUserShema.js';
+import registerUserSchema from '../schemas/registerUserSchema.js';
 import loginUserSchema from '../schemas/loginUserSchema.js';
 
 const { ACCESS_SECRET_KEY } = process.env;
@@ -13,24 +13,24 @@ class AuthController {
       const { email, username, password } = JSON.parse(data);
       validateBody(registerUserSchema, { email, username, password });
 
-      const query = 'SELECT * FROM users WHERE email = ? OR username = ?;';
+      const query = 'SELECT * FROM fbl-users WHERE email = ? OR username = ?;';
       db.query(query, [email, username], async (error, data) => {
-        if (error) return socket.emit('error', `It's happend next error ${error}`);
+        if (error) return socket.emit('error', `It's happened next error ${error}`);
         if (data.length) {
           return socket.emit('register_response', 'User already exists!');
         }
 
         const hashPassword = await bcrypt.hash(password, 10);
 
-        const q = 'INSERT INTO users(`username`,`email`,`password`) VALUES (?);';
+        const q = 'INSERT INTO fbl-users(`username`,`email`,`password`) VALUES (?);';
         const values = [username, email, hashPassword];
         db.query(q, [values], (error, data) => {
-          if (error) return socket.emit('error', `It's happend next error ${error}`);
+          if (error) return socket.emit('error', `It's happened next error ${error}`);
           socket.emit('register_response', 'User has been created');
         });
       });
     } catch (error) {
-      socket.emit('error', `It's happend next error ${error}`);
+      socket.emit('error', `It's happened next error ${error}`);
     }
   }
   async login(data, socket) {
@@ -38,9 +38,9 @@ class AuthController {
       const { username, password } = JSON.parse(data);
       validateBody(loginUserSchema, { username, password });
 
-      const query = 'SELECT * FROM users WHERE username = ?;';
+      const query = 'SELECT * FROM fbl-users WHERE username = ?;';
       db.query(query, [username], (error, data) => {
-        if (error) return socket.emit('error', `It's happend next error ${error}`);
+        if (error) return socket.emit('error', `It's happened next error ${error}`);
         if (data.length === 0) {
           return socket.emit('login_response', 'User not found!');
         }
@@ -59,7 +59,7 @@ class AuthController {
         socket.emit('login_response', JSON.stringify(userDTO));
       });
     } catch (error) {
-      socket.emit('error', `It's happend next error ${error}`);
+      socket.emit('error', `It's happened next error ${error}`);
     }
   }
   async logout(socket) {
@@ -67,7 +67,7 @@ class AuthController {
       socket.handshake.auth = {};
       socket.emit('logout_response', 'User has been logged out');
     } catch (error) {
-      socket.emit('error', `It's happend next error ${error}`);
+      socket.emit('error', `It's happened next error ${error}`);
     }
   }
 }

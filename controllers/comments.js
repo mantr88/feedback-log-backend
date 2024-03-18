@@ -12,9 +12,9 @@ class CommentsController {
   async getComments(socket) {
     try {
       const query =
-        'SELECT  c.id, c.text, c.date, c.img, u.username , u.email , u.home_page FROM comments AS c INNER JOIN users u ON u.id = c.uid;';
+        'SELECT  c.id, c.text, c.date, c.img, u.username , u.email , u.home_page FROM comments AS c INNER JOIN fbl-users u ON u.id = c.uid;';
       db.query(query, (error, data) => {
-        if (error) return socket.emit('error', `It's happend next error ${error}`);
+        if (error) return socket.emit('error', `It's happened next error ${error}`);
         if (!data.length) {
           return socket.emit('add_comment_response', 'No comments yet');
         }
@@ -53,11 +53,11 @@ class CommentsController {
 
       const values = [text, img, id];
       db.query(q, [values], error => {
-        if (error) return socket.emit('error', `It's happend next error ${error}`);
+        if (error) return socket.emit('error', `It's happened next error ${error}`);
         return socket.emit('add_comment_response', JSON.stringify(values));
       });
     } catch (error) {
-      socket.emit('error', `It's happend next error ${error}`);
+      socket.emit('error', `It's happened next error ${error}`);
     }
   }
 }
